@@ -107,9 +107,42 @@ draft: false             # 選填;true 時只在 dev 顯示,不會發布
 
 ## 部署到 GitHub Pages
 
-1. 建立 repo `misterlihao/blog` 並推上 `main`。
-2. repo → **Settings → Pages → Build and deployment → Source** 選 **GitHub Actions**。
-3. 之後每次推到 `main`,`.github/workflows/deploy.yml` 會自動建置 + 部署。
+線上網址:**https://misterlihao.github.io/blog/**
+
+### 目前的部署方式(branch deploy)
+
+網站目前由 `gh-pages` 分支發布(Pages Source = Deploy from a branch)。
+`gh-pages` 分支放的是**本機建置好的 `dist/`**,含一個 `.nojekyll`(避免 GitHub 用
+Jekyll 吃掉 Astro 的 `_astro/` 資源)。
+
+**發布新文章 / 更新** —— 寫完後在專案根目錄跑:
+
+```bash
+npm run build
+touch dist/.nojekyll
+cd dist && git init -b gh-pages && git add -A \
+  && git commit -m deploy \
+  && git push -f https://github.com/misterlihao/blog.git gh-pages \
+  && cd .. && rm -rf dist/.git
+```
+
+`main` 分支放原始碼;`gh-pages` 放建置產物。
+
+### 升級成 CI 自動部署(建議,一次性)
+
+專案已備好 `.github/workflows/deploy.yml`,只是目前的 `gh` token 缺 `workflow`
+權限、無法推送 workflow 檔。授權後即可改成「推 `main` 就自動建置部署」:
+
+```bash
+gh auth refresh -s workflow          # 瀏覽器授權一次
+git add .github/workflows/deploy.yml
+git commit -m "Enable Pages CI"
+git push
+# 然後把 Pages Source 切回 GitHub Actions:
+gh api -X PUT repos/misterlihao/blog/pages -f build_type=workflow
+```
+
+之後就不必再手動推 `gh-pages`。
 
 > repo 名稱 = 網址 base path。若改用其他 repo 名稱,記得同步改 `astro.config.mjs` 的 `base`。
 > 日後若接自訂域名(根目錄、無 base),把 `base` 改掉、加 `public/CNAME` 即可。
