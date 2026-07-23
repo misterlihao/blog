@@ -1,0 +1,14 @@
+---
+// Two-or-more column layout. Wrap children in <Col>…</Col>.
+interface Props { count?: number; }
+const { count = 2 } = Astro.props;
+---
+<div class="columns" style={`--cols:${count}`}>
+  <slot />
+</div>
+
+<style>
+  .columns { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 1.4rem; margin: 1.6rem 0; }
+  .columns > * > :first-child { margin-top: 0; }
+  @media (max-width: 34rem) { .columns { grid-template-columns: 1fr; } }
+</style>

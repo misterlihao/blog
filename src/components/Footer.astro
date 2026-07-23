@@ -1,0 +1,26 @@
+---
+import { SITE, type Locale } from '~/config';
+import { localeUrl, withBase } from '~/i18n/utils';
+
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const year = 2026;
+---
+<footer class="site-footer">
+  <div class="container wide row">
+    <span>© {year} {SITE.author}</span>
+    <a href={withBase(`/rss/${locale}.xml`)}>RSS</a>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    margin-top: 4rem;
+    padding: 1.5rem 0;
+  }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+  .site-footer a { color: var(--fg-muted); }
+</style>

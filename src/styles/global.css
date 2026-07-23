@@ -1,0 +1,158 @@
+/* ---- Design tokens -------------------------------------------------- */
+:root {
+  --font-cjk-zh: "PingFang TC", "PingFang SC", "Microsoft JhengHei",
+    "Noto Sans TC", "Noto Sans CJK TC", sans-serif;
+  --font-cjk-ja: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic",
+    "YuGothic", "Meiryo", "Noto Sans JP", "Noto Sans CJK JP", sans-serif;
+  --font-latin: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", "Menlo",
+    Consolas, monospace;
+
+  /* Latin first, then the CJK fallback is set per-language below. */
+  --font-body: var(--font-latin), var(--font-cjk-zh);
+
+  --measure: 42rem;
+  --radius: 10px;
+  --space: 1.2rem;
+
+  /* light theme */
+  --bg: #fdfdfc;
+  --bg-subtle: #f4f4f2;
+  --fg: #1a1a19;
+  --fg-muted: #6b6b66;
+  --border: #e4e4e0;
+  --accent: #2f6f4f;
+  --accent-fg: #ffffff;
+  --code-bg: #f1f1ee;
+}
+
+:root[data-theme="dark"] {
+  --bg: #16161a;
+  --bg-subtle: #1f1f25;
+  --fg: #e8e8e6;
+  --fg-muted: #9a9a95;
+  --border: #303038;
+  --accent: #6fd6a3;
+  --accent-fg: #0d1512;
+  --code-bg: #22222a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #16161a;
+    --bg-subtle: #1f1f25;
+    --fg: #e8e8e6;
+    --fg-muted: #9a9a95;
+    --border: #303038;
+    --accent: #6fd6a3;
+    --accent-fg: #0d1512;
+    --code-bg: #22222a;
+  }
+}
+
+/* Per-language font routing: html[lang] drives the whole page,
+   :lang() also fixes inline mixed CJK runs. */
+:lang(ja) { --font-body: var(--font-latin), var(--font-cjk-ja); }
+:lang(zh-Hant-TW), :lang(zh) { --font-body: var(--font-latin), var(--font-cjk-zh); }
+
+/* ---- Base ----------------------------------------------------------- */
+* { box-sizing: border-box; }
+
+html {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  line-height: 1.75;
+  font-size: 1.02rem;
+  letter-spacing: 0.01em;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+
+img { max-width: 100%; height: auto; }
+
+h1, h2, h3, h4 { line-height: 1.35; font-weight: 700; letter-spacing: 0.005em; }
+
+code, pre { font-family: var(--font-mono); }
+:not(pre) > code {
+  background: var(--code-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+  font-size: 0.9em;
+}
+pre {
+  background: var(--code-bg);
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+/* ---- Layout helpers ------------------------------------------------- */
+.container { width: 100%; max-width: var(--measure); margin: 0 auto; padding: 0 1.25rem; }
+.wide { max-width: 60rem; }
+.flow > * + * { margin-top: var(--space); }
+main { flex: 1 0 auto; width: 100%; }
+
+/* ---- Article prose -------------------------------------------------- */
+.prose { }
+.prose > * + * { margin-top: 1.35rem; }
+.prose h2 { margin-top: 2.5rem; font-size: 1.5rem; }
+.prose h3 { margin-top: 2rem; font-size: 1.2rem; }
+.prose h4 { margin-top: 1.6rem; font-size: 1.05rem; color: var(--fg-muted); }
+.prose blockquote {
+  margin: 0;
+  padding: 0.4rem 1.2rem;
+  border-left: 3px solid var(--accent);
+  color: var(--fg-muted);
+}
+.prose ul, .prose ol { padding-left: 1.4rem; }
+.prose li + li { margin-top: 0.4rem; }
+.prose img { border-radius: var(--radius); }
+
+/* Markdown tables — scannable, theme-aware, horizontally scrollable */
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin: 1.8rem 0;
+}
+.prose thead th {
+  background: var(--bg-subtle);
+  text-align: left;
+  font-weight: 700;
+}
+.prose th, .prose td {
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.8rem;
+  vertical-align: top;
+}
+.prose tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--bg-subtle) 45%, transparent); }
+
+/* Inline glossary term */
+.term {
+  border-bottom: 1px dotted var(--accent);
+  cursor: help;
+  font-weight: 600;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}

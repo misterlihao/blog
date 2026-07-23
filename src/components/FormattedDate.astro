@@ -1,0 +1,11 @@
+---
+import type { Locale } from '~/config';
+
+interface Props { date: Date; locale: Locale; }
+const { date, locale } = Astro.props;
+const intlLocale = locale === 'ja' ? 'ja-JP' : 'zh-TW';
+const text = new Intl.DateTimeFormat(intlLocale, {
+  year: 'numeric', month: 'long', day: 'numeric',
+}).format(date);
+---
+<time datetime={date.toISOString()}>{text}</time>

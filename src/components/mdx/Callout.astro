@@ -1,0 +1,28 @@
+---
+interface Props {
+  type?: 'note' | 'tip' | 'warning';
+  title?: string;
+}
+const { type = 'note', title } = Astro.props;
+const icon = { note: 'ℹ️', tip: '💡', warning: '⚠️' }[type];
+---
+<aside class={`callout ${type}`}>
+  <p class="callout-head"><span aria-hidden="true">{icon}</span>{title && <strong>{title}</strong>}</p>
+  <div class="callout-body"><slot /></div>
+</aside>
+
+<style>
+  .callout {
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-radius: var(--radius);
+    padding: 0.9rem 1.1rem;
+    background: var(--bg-subtle);
+  }
+  .callout-head { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.4rem; }
+  .callout-body > :first-child { margin-top: 0; }
+  .callout-body > :last-child { margin-bottom: 0; }
+  .callout.note { border-left-color: var(--accent); }
+  .callout.tip { border-left-color: #3b82f6; }
+  .callout.warning { border-left-color: #e0a800; }
+</style>

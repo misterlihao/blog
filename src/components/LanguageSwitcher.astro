@@ -1,0 +1,39 @@
+---
+import { LOCALES, LOCALE_META, type Locale } from '~/config';
+import { swapLocaleInPath } from '~/i18n/utils';
+
+interface Props {
+  current: Locale;
+  /** Locales that actually have this page. Defaults to all (mirrored pages). */
+  available?: Locale[];
+}
+const { current, available = LOCALES } = Astro.props;
+---
+<div class="lang-switch" role="group" aria-label="language">
+  {LOCALES.map((loc: Locale, i) => {
+    const has = available.includes(loc);
+    const isActive = loc === current;
+    const label = LOCALE_META[loc].label;
+    return (
+      <>
+        {i > 0 && <span class="sep" aria-hidden="true">/</span>}
+        {isActive ? (
+          <span class="lang active" aria-current="true">{label}</span>
+        ) : has ? (
+          <a class="lang" href={swapLocaleInPath(Astro.url, loc)}>{label}</a>
+        ) : (
+          <span class="lang disabled" title={LOCALE_META[current].ui.noTranslation}>{label}</span>
+        )}
+      </>
+    );
+  })}
+</div>
+
+<style>
+  .lang-switch { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.9rem; }
+  .lang { color: var(--fg-muted); text-decoration: none; }
+  .lang:hover { color: var(--fg); }
+  .lang.active { color: var(--fg); font-weight: 600; }
+  .lang.disabled { color: var(--border); cursor: not-allowed; }
+  .sep { color: var(--border); }
+</style>

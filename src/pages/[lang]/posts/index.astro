@@ -1,0 +1,26 @@
+---
+import { LOCALES, LOCALE_META, type Locale } from '~/config';
+import { getPostsByLocale } from '~/lib/posts';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PostCard from '~/components/PostCard.astro';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const meta = LOCALE_META[locale];
+const posts = await getPostsByLocale(locale);
+---
+<BaseLayout locale={locale} title={meta.ui.allPosts}>
+  <section class="container">
+    <h1 class="page-title">{meta.ui.allPosts}</h1>
+    {posts.length === 0 && <p class="empty">—</p>}
+    {posts.map((post) => <PostCard post={post} locale={locale} />)}
+  </section>
+</BaseLayout>
+
+<style>
+  .page-title { font-size: 1.6rem; margin: 2.5rem 0 1rem; }
+  .empty { color: var(--fg-muted); }
+</style>

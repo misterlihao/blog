@@ -1,0 +1,40 @@
+---
+import { LOCALES, LOCALE_META, type Locale } from '~/config';
+import { localeUrl } from '~/i18n/utils';
+import { getPostsByLocale } from '~/lib/posts';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PostCard from '~/components/PostCard.astro';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const meta = LOCALE_META[locale];
+const posts = await getPostsByLocale(locale);
+const recent = posts.slice(0, 8);
+---
+<BaseLayout locale={locale} description={meta.tagline}>
+  <section class="container hero">
+    <h1>{meta.title}</h1>
+    {meta.tagline && <p class="tagline">{meta.tagline}</p>}
+  </section>
+
+  <section class="container">
+    <h2 class="section-title">{meta.ui.recentPosts}</h2>
+    {recent.length === 0 && <p class="empty">—</p>}
+    {recent.map((post) => <PostCard post={post} locale={locale} />)}
+    {posts.length > recent.length && (
+      <p class="more"><a href={localeUrl(locale, 'posts')}>{meta.ui.allPosts} →</a></p>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .hero { padding: 3rem 1.25rem 1.5rem; }
+  .hero h1 { margin: 0; font-size: 2rem; }
+  .tagline { margin: 0.6rem 0 0; color: var(--fg-muted); font-size: 1.05rem; }
+  .section-title { font-size: 1rem; color: var(--fg-muted); font-weight: 600; margin: 1.5rem 0 0; text-transform: uppercase; letter-spacing: 0.08em; }
+  .more { margin-top: 1.5rem; }
+  .empty { color: var(--fg-muted); }
+</style>

@@ -1,0 +1,41 @@
+---
+import { LOCALES, LOCALE_META, type Locale } from '~/config';
+import { getTags } from '~/lib/posts';
+import { localeUrl } from '~/i18n/utils';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+
+export function getStaticPaths() {
+  return LOCALES.map((lang) => ({ params: { lang } }));
+}
+
+const locale = Astro.params.lang as Locale;
+const meta = LOCALE_META[locale];
+const tags = await getTags(locale);
+---
+<BaseLayout locale={locale} title={meta.ui.tags}>
+  <section class="container">
+    <h1 class="page-title">{meta.ui.tags}</h1>
+    {tags.length === 0 && <p class="empty">—</p>}
+    <ul class="taglist">
+      {tags.map(({ tag, count }) => (
+        <li>
+          <a href={localeUrl(locale, `tags/${encodeURIComponent(tag)}`)}>#{tag}</a>
+          <span class="count">{count}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-title { font-size: 1.6rem; margin: 2.5rem 0 1rem; }
+  .taglist { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .taglist li {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.3rem 0.9rem;
+  }
+  .taglist a { text-decoration: none; color: var(--fg); }
+  .taglist a:hover { color: var(--accent); }
+  .count { color: var(--fg-muted); font-size: 0.8rem; }
+  .empty { color: var(--fg-muted); }
+</style>

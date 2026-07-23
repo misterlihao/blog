@@ -1,0 +1,40 @@
+---
+import type { Post } from '~/lib/posts';
+import { parseId } from '~/lib/posts';
+import { localeUrl } from '~/i18n/utils';
+import { type Locale } from '~/config';
+import FormattedDate from './FormattedDate.astro';
+
+interface Props { post: Post; locale: Locale; }
+const { post, locale } = Astro.props;
+const { slug } = parseId(post.id);
+const href = localeUrl(locale, `posts/${slug}`);
+---
+<article class="card">
+  <a class="card-link" href={href}>
+    <h3>{post.data.title}</h3>
+    {post.data.description && <p class="desc">{post.data.description}</p>}
+  </a>
+  <div class="meta">
+    <FormattedDate date={post.data.pubDate} locale={locale} />
+    {post.data.tags.length > 0 && (
+      <span class="tags">
+        {post.data.tags.map((tg: string) => (
+          <a class="tag" href={localeUrl(locale, `tags/${encodeURIComponent(tg)}`)}>#{tg}</a>
+        ))}
+      </span>
+    )}
+  </div>
+</article>
+
+<style>
+  .card { padding: 1.2rem 0; border-bottom: 1px solid var(--border); }
+  .card-link { text-decoration: none; color: inherit; display: block; }
+  .card h3 { margin: 0 0 0.3rem; font-size: 1.2rem; }
+  .card-link:hover h3 { color: var(--accent); }
+  .desc { margin: 0.2rem 0 0; color: var(--fg-muted); }
+  .meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; font-size: 0.82rem; color: var(--fg-muted); }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tag { color: var(--fg-muted); text-decoration: none; }
+  .tag:hover { color: var(--accent); }
+</style>

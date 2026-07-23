@@ -1,0 +1,16 @@
+---
+// Auto-numbered pipeline. Wrap <Step title="...">body</Step> children.
+---
+<div class="steps"><slot /></div>
+
+<style>
+  .steps {
+    counter-reset: step;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.8rem 0;
+    border-left: 2px solid var(--border);
+    padding-left: 0;
+  }
+</style>

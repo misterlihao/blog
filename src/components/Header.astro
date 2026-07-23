@@ -1,0 +1,55 @@
+---
+import { LOCALE_META, type Locale } from '~/config';
+import { localeUrl } from '~/i18n/utils';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+  locale: Locale;
+  available?: Locale[];
+}
+const { locale, available } = Astro.props;
+const t = LOCALE_META[locale].ui;
+const title = LOCALE_META[locale].title;
+---
+<header class="site-header">
+  <div class="container wide bar">
+    <a class="brand" href={localeUrl(locale)}>{title}</a>
+    <nav class="nav" aria-label="primary">
+      <a href={localeUrl(locale, 'posts')}>{t.posts}</a>
+      <a href={localeUrl(locale, 'tags')}>{t.tags}</a>
+      <a href={localeUrl(locale, 'search')}>{t.search}</a>
+    </nav>
+    <div class="controls">
+      <LanguageSwitcher current={locale} available={available} />
+      <ThemeToggle />
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .brand { font-weight: 700; font-size: 1.05rem; text-decoration: none; color: var(--fg); }
+  .nav { display: flex; gap: 1rem; font-size: 0.95rem; }
+  .nav a { color: var(--fg-muted); text-decoration: none; }
+  .nav a:hover { color: var(--fg); }
+  .controls { display: flex; align-items: center; gap: 0.9rem; margin-left: auto; }
+  @media (max-width: 30rem) {
+    .controls { margin-left: 0; width: 100%; justify-content: space-between; }
+  }
+</style>

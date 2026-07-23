@@ -1,0 +1,71 @@
+---
+import { getCollection, render } from 'astro:content';
+import { LOCALE_META, type Locale } from '~/config';
+import { parseId, getAvailableLocales } from '~/lib/posts';
+import { localeUrl } from '~/i18n/utils';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import FormattedDate from '~/components/FormattedDate.astro';
+import { mdxComponents } from '~/components/mdx';
+
+export async function getStaticPaths() {
+  const all = await getCollection('posts', (p) =>
+    import.meta.env.DEV ? true : !p.data.draft,
+  );
+  return Promise.all(
+    all.map(async (entry) => {
+      const { locale, slug } = parseId(entry.id);
+      return {
+        params: { lang: locale, slug },
+        props: { entry, available: await getAvailableLocales(slug) },
+      };
+    }),
+  );
+}
+
+const { entry, available } = Astro.props;
+const locale = Astro.params.lang as Locale;
+const t = LOCALE_META[locale].ui;
+const { Content } = await render(entry);
+---
+<BaseLayout
+  locale={locale}
+  title={entry.data.title}
+  description={entry.data.description}
+  available={available}
+  ogType="article"
+>
+  <article class="container">
+    <header class="post-head">
+      <h1>{entry.data.title}</h1>
+      <div class="meta">
+        <FormattedDate date={entry.data.pubDate} locale={locale} />
+        {entry.data.updatedDate && (
+          <span>· {t.updatedOn} <FormattedDate date={entry.data.updatedDate} locale={locale} /></span>
+        )}
+      </div>
+      {entry.data.tags.length > 0 && (
+        <div class="tags">
+          {entry.data.tags.map((tg: string) => (
+            <a class="tag" href={localeUrl(locale, `tags/${encodeURIComponent(tg)}`)}>#{tg}</a>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <div class="prose" data-pagefind-body>
+      <Content components={mdxComponents} />
+    </div>
+
+    <p class="back"><a href={localeUrl(locale, 'posts')}>{t.backToPosts}</a></p>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-head { margin: 2.5rem 0 2rem; }
+  .post-head h1 { font-size: 1.9rem; margin: 0 0 0.6rem; }
+  .meta { color: var(--fg-muted); font-size: 0.9rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.7rem; font-size: 0.85rem; }
+  .tag { color: var(--fg-muted); text-decoration: none; }
+  .tag:hover { color: var(--accent); }
+  .back { margin-top: 3rem; font-size: 0.9rem; }
+</style>

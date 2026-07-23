@@ -1,0 +1,7 @@
+---
+// Inline glossary highlight. <Term def="...">parity</Term>
+// def is optional; when present it shows as a hover tooltip.
+interface Props { def?: string; }
+const { def } = Astro.props;
+---
+<span class="term" title={def}><slot /></span>

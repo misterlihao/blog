@@ -1,0 +1,26 @@
+---
+// Bare site root (/blog/). No server on GitHub Pages, so language
+// detection + redirect happens client-side. Defaults to zh-tw.
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const zh = `${base}/zh-tw/`;
+const ja = `${base}/ja/`;
+---
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>haoli</title>
+    <link rel="canonical" href={zh} />
+    <script is:inline define:vars={{ zh, ja }}>
+      const lang = (navigator.language || 'zh').toLowerCase();
+      location.replace(lang.startsWith('ja') ? ja : zh);
+    </script>
+    <meta http-equiv="refresh" content={`0; url=${zh}`} />
+  </head>
+  <body>
+    <p style="font-family:sans-serif;padding:2rem">
+      <a href={zh}>中文</a> / <a href={ja}>日本語</a>
+    </p>
+  </body>
+</html>

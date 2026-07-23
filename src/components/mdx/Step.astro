@@ -1,0 +1,36 @@
+---
+interface Props { title: string; }
+const { title } = Astro.props;
+---
+<div class="step">
+  <div class="step-title">{title}</div>
+  <div class="step-body"><slot /></div>
+</div>
+
+<style>
+  .step {
+    counter-increment: step;
+    position: relative;
+    padding: 0.6rem 0 0.9rem 3rem;
+  }
+  .step::before {
+    content: counter(step);
+    position: absolute;
+    left: -1.05rem;
+    top: 0.6rem;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 700;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-title { font-weight: 700; margin-bottom: 0.15rem; }
+  .step-body { color: var(--fg-muted); }
+  .step-body > :first-child { margin-top: 0; }
+  .step-body > :last-child { margin-bottom: 0; }
+</style>

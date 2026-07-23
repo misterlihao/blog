@@ -1,0 +1,27 @@
+---
+import '~/styles/global.css';
+import { LOCALE_META } from '~/config';
+import { localeUrl } from '~/i18n/utils';
+const zh = LOCALE_META['zh-tw'].ui;
+const ja = LOCALE_META['ja'].ui;
+---
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body>
+    <main class="container" style="text-align:center;padding-top:6rem">
+      <h1 style="font-size:3rem;margin:0">404</h1>
+      <p style="color:var(--fg-muted)">{zh.notFound}｜{ja.notFound}</p>
+      <p style="margin-top:2rem">
+        <a href={localeUrl('zh-tw')}>{zh.goHome}</a>
+        <span style="color:var(--border)"> · </span>
+        <a href={localeUrl('ja')}>{ja.goHome}</a>
+      </p>
+    </main>
+  </body>
+</html>

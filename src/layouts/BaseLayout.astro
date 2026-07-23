@@ -1,0 +1,76 @@
+---
+import '~/styles/global.css';
+import { LOCALE_META, SITE, type Locale } from '~/config';
+import { withBase } from '~/i18n/utils';
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+
+interface Props {
+  locale: Locale;
+  title?: string;
+  description?: string;
+  /** locales that have this exact page (for the switcher); default all */
+  available?: Locale[];
+  /** OpenGraph type; "article" for posts */
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+}
+
+const {
+  locale,
+  title,
+  description = '',
+  available,
+  ogType = 'website',
+  noindex = false,
+} = Astro.props;
+
+const meta = LOCALE_META[locale];
+const siteTitle = meta.title;
+const fullTitle = title && title !== siteTitle ? `${title} — ${siteTitle}` : siteTitle;
+const canonical = new URL(Astro.url.pathname, SITE.domain).href;
+---
+<!doctype html>
+<html lang={meta.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={siteTitle}
+      href={withBase(`/rss/${locale}.xml`)}
+    />
+
+    <!-- OpenGraph / Twitter -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:locale" content={meta.htmlLang.replace('-', '_')} />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- No-flash theme: run before first paint -->
+    <script is:inline>
+      (() => {
+        try {
+          const t = localStorage.getItem('theme');
+          if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <Header locale={locale} available={available} />
+    <main>
+      <slot />
+    </main>
+    <Footer locale={locale} />
+  </body>
+</html>

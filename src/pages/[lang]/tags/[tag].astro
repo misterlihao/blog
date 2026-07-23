@@ -1,0 +1,34 @@
+---
+import { LOCALES, LOCALE_META, type Locale } from '~/config';
+import { getPostsByLocale, getTags } from '~/lib/posts';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PostCard from '~/components/PostCard.astro';
+
+export async function getStaticPaths() {
+  const paths = [];
+  for (const lang of LOCALES) {
+    const tags = await getTags(lang);
+    for (const { tag } of tags) {
+      paths.push({ params: { lang, tag }, props: { tag } });
+    }
+  }
+  return paths;
+}
+
+const locale = Astro.params.lang as Locale;
+const { tag } = Astro.props;
+const meta = LOCALE_META[locale];
+const posts = (await getPostsByLocale(locale)).filter((p) => p.data.tags.includes(tag));
+---
+<BaseLayout locale={locale} title={`#${tag}`}>
+  <section class="container">
+    <p class="crumb">{meta.ui.taggedWith}</p>
+    <h1 class="page-title">#{tag}</h1>
+    {posts.map((post) => <PostCard post={post} locale={locale} />)}
+  </section>
+</BaseLayout>
+
+<style>
+  .crumb { color: var(--fg-muted); font-size: 0.85rem; margin: 2.5rem 0 0; }
+  .page-title { font-size: 1.6rem; margin: 0.2rem 0 1rem; }
+</style>

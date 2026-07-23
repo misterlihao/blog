@@ -1,0 +1,48 @@
+---
+/**
+ * Labeled 2-axis grid. Turns a "X × Y → outcomes" prose passage into a table.
+ * cells is row-major: cells[rowIndex][colIndex].
+ */
+interface Props {
+  xAxis?: string;
+  yAxis?: string;
+  cols: string[];
+  rows: string[];
+  cells: string[][];
+}
+const { xAxis, yAxis, cols, rows, cells } = Astro.props;
+---
+<div class="matrix-wrap">
+  <div class="matrix" style={`--cols:${cols.length}`}>
+    <div class="corner">{yAxis && <span class="yaxis">{yAxis}</span>}{xAxis && <span class="xaxis">{xAxis}</span>}</div>
+    {cols.map((c) => <div class="colhead">{c}</div>)}
+    {rows.map((r, ri) => (
+      <>
+        <div class="rowhead">{r}</div>
+        {cols.map((_, ci) => <div class="cell">{cells[ri]?.[ci]}</div>)}
+      </>
+    ))}
+  </div>
+</div>
+
+<style>
+  .matrix-wrap { margin: 1.8rem 0; overflow-x: auto; }
+  .matrix {
+    display: grid;
+    grid-template-columns: auto repeat(var(--cols), 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    min-width: 22rem;
+  }
+  .matrix > div { background: var(--bg); padding: 0.7rem 0.85rem; }
+  .corner { position: relative; background: var(--bg-subtle); font-size: 0.72rem; color: var(--fg-muted); min-width: 4.5rem; }
+  .corner .yaxis { display: block; font-weight: 600; }
+  .corner .xaxis { display: block; text-align: right; font-weight: 600; }
+  .colhead, .rowhead { background: var(--bg-subtle); font-weight: 700; font-size: 0.9rem; }
+  .colhead { text-align: center; }
+  .rowhead { display: flex; align-items: center; }
+  .cell { font-size: 0.9rem; line-height: 1.5; }
+</style>
