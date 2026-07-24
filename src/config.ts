@@ -39,6 +39,7 @@ export const LOCALE_META: Record<
       updatedOn: string;
       taggedWith: string;
       backToPosts: string;
+      toc: string;
       searchPlaceholder: string;
       notFound: string;
       notFoundBody: string;
@@ -63,6 +64,7 @@ export const LOCALE_META: Record<
       updatedOn: '更新於',
       taggedWith: '標籤',
       backToPosts: '← 回到文章列表',
+      toc: '目錄',
       searchPlaceholder: '搜尋文章…',
       notFound: '找不到頁面',
       notFoundBody: '這個網址不存在,或內容已移動。',
@@ -86,6 +88,7 @@ export const LOCALE_META: Record<
       updatedOn: '更新日',
       taggedWith: 'タグ',
       backToPosts: '← 記事一覧へ戻る',
+      toc: '目次',
       searchPlaceholder: '記事を検索…',
       notFound: 'ページが見つかりません',
       notFoundBody: 'このURLは存在しないか、内容が移動しました。',

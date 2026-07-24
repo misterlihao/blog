@@ -1,0 +1,322 @@
+---
+/**
+ * 文章章節目錄 (TOC)。
+ * 桌機:左側留白區固定浮動,手風琴只展開當前章節 + scroll-spy 高亮。
+ * 窄畫面:右下角浮動按鈕 → 左側滑出抽屜 (內容全展開,仍高亮當前)。
+ * 標題數 < 2 時不渲染。收錄 h2 + h3。
+ */
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+  /** 目錄標籤(已在地化):目錄 / 目次 */
+  label: string;
+}
+const { headings, label } = Astro.props;
+
+type Group = { slug: string; text: string; children: MarkdownHeading[] };
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const groups: Group[] = [];
+for (const h of items) {
+  if (h.depth === 2) {
+    groups.push({ slug: h.slug, text: h.text, children: [] });
+  } else if (groups.length) {
+    groups[groups.length - 1].children.push(h);
+  } else {
+    // 罕見:第一個 h2 之前就出現 h3,當作頂層項
+    groups.push({ slug: h.slug, text: h.text, children: [] });
+  }
+}
+const show = items.length >= 2;
+---
+{show && (
+  <>
+    {/* 桌機:左側固定浮動 */}
+    <aside class="toc toc-desktop" aria-label={label}>
+      <p class="toc-title">{label}</p>
+      <ol class="toc-nav">
+        {groups.map((g) => (
+          <li class={`toc-group${g.children.length ? '' : ' toc-leaf'}`} data-group={g.slug}>
+            <a class="toc-link toc-h2" data-toc-link={g.slug} data-parent={g.slug} href={`#${g.slug}`}>{g.text}</a>
+            {g.children.length > 0 && (
+              <ol class="toc-sub">
+                {g.children.map((c) => (
+                  <li>
+                    <a class="toc-link toc-h3" data-toc-link={c.slug} data-parent={g.slug} href={`#${c.slug}`}>{c.text}</a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </li>
+        ))}
+      </ol>
+    </aside>
+
+    {/* 窄畫面:FAB + 遮罩 + 抽屜 */}
+    <button class="toc-fab" type="button" aria-label={label} aria-expanded="false" aria-controls="toc-drawer">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="8" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="20" y2="12" /><line x1="8" y1="18" x2="20" y2="18" />
+        <circle cx="4" cy="6" r="0.6" fill="currentColor" /><circle cx="4" cy="12" r="0.6" fill="currentColor" /><circle cx="4" cy="18" r="0.6" fill="currentColor" />
+      </svg>
+    </button>
+    <div class="toc-overlay" hidden></div>
+    <aside id="toc-drawer" class="toc toc-drawer" aria-label={label} role="dialog" aria-modal="true" hidden>
+      <p class="toc-title">{label}</p>
+      <ol class="toc-nav">
+        {groups.map((g) => (
+          <li class="toc-group" data-group={g.slug}>
+            <a class="toc-link toc-h2" data-toc-link={g.slug} data-parent={g.slug} href={`#${g.slug}`}>{g.text}</a>
+            {g.children.length > 0 && (
+              <ol class="toc-sub">
+                {g.children.map((c) => (
+                  <li>
+                    <a class="toc-link toc-h3" data-toc-link={c.slug} data-parent={g.slug} href={`#${c.slug}`}>{c.text}</a>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </li>
+        ))}
+      </ol>
+    </aside>
+  </>
+)}
+
+<style>
+  .toc {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+  .toc-title {
+    margin: 0 0 0.6rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+  }
+  .toc-nav,
+  .toc-sub {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .toc-link {
+    display: block;
+    border-left: 2px solid transparent;
+    padding: 0.25rem 0 0.25rem 0.75rem;
+    color: var(--fg-muted);
+    text-decoration: none;
+  }
+  .toc-link:hover { color: var(--fg); }
+  .toc-link.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+  }
+  .toc-h3 { padding-left: 1.6rem; font-size: 0.82rem; }
+
+  /* ---- 桌機浮動版 (手風琴) ---- */
+  .toc-desktop { display: none; }
+  .toc-sub {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease;
+  }
+  .toc-group.open > .toc-sub { max-height: 30rem; }
+
+  @media (min-width: 75rem) {
+    .toc-desktop {
+      display: block;
+      position: fixed;
+      top: 6rem;
+      left: calc((100vw - var(--measure)) / 2 - 15rem);
+      width: 13rem;
+      max-height: calc(100vh - 8rem);
+      overflow-y: auto;
+      z-index: 5;
+    }
+    .toc-fab,
+    .toc-drawer,
+    .toc-overlay { display: none !important; }
+  }
+
+  /* ---- 窄畫面:FAB + 抽屜 ---- */
+  .toc-fab {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 38;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--fg);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    cursor: pointer;
+  }
+  .toc-fab:hover { color: var(--accent); border-color: var(--accent); }
+
+  .toc-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .toc-overlay.open { opacity: 1; }
+
+  .toc-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 40;
+    width: min(80vw, 19rem);
+    padding: 1.5rem 1.25rem;
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .toc-drawer.open { transform: none; }
+  /* 抽屜內全展開 */
+  .toc-drawer .toc-sub { max-height: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toc-sub,
+    .toc-overlay,
+    .toc-drawer { transition: none; }
+  }
+</style>
+
+<script>
+  function setupToc() {
+    const prose = document.querySelector('.prose');
+    if (!prose) return;
+    const heads = Array.from(
+      prose.querySelectorAll<HTMLElement>('h2[id], h3[id]'),
+    );
+    if (heads.length < 2) return;
+
+    // slug -> 所有對應的目錄連結 (桌機 + 抽屜)
+    const linksBySlug = new Map<string, HTMLAnchorElement[]>();
+    document
+      .querySelectorAll<HTMLAnchorElement>('a[data-toc-link]')
+      .forEach((a) => {
+        const slug = a.dataset.tocLink!;
+        if (!linksBySlug.has(slug)) linksBySlug.set(slug, []);
+        linksBySlug.get(slug)!.push(a);
+      });
+    if (linksBySlug.size === 0) return;
+
+    const headerH =
+      (document.querySelector<HTMLElement>('.site-header')?.offsetHeight ?? 56) +
+      8;
+
+    let activeSlug: string | null = null;
+    function setActive(slug: string) {
+      if (slug === activeSlug) return;
+      activeSlug = slug;
+      document
+        .querySelectorAll<HTMLElement>('a[data-toc-link].active')
+        .forEach((a) => a.classList.remove('active'));
+      const parents = new Set<string>();
+      (linksBySlug.get(slug) ?? []).forEach((a) => {
+        a.classList.add('active');
+        if (a.dataset.parent) parents.add(a.dataset.parent);
+      });
+      // 手風琴:只展開當前所屬 h2 群組 (僅桌機版)
+      document
+        .querySelectorAll<HTMLElement>('.toc-desktop .toc-group')
+        .forEach((g) => {
+          g.classList.toggle('open', parents.has(g.dataset.group ?? ''));
+        });
+    }
+
+    // scroll-spy:頂端觸發線落在標題進入視窗上緣時
+    const visible = new Set<string>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          const id = (e.target as HTMLElement).id;
+          if (e.isIntersecting) visible.add(id);
+          else visible.delete(id);
+        }
+        // 有標題落在觸發帶:取文件順序最前者
+        const firstVisible = heads.find((h) => visible.has(h.id));
+        if (firstVisible) {
+          setActive(firstVisible.id);
+          return;
+        }
+        // 觸發帶內沒有:取觸發線上方最後一個標題
+        let above = heads[0];
+        for (const h of heads) {
+          if (h.getBoundingClientRect().top < headerH + 1) above = h;
+          else break;
+        }
+        setActive(above.id);
+      },
+      { rootMargin: `-${headerH}px 0px -75% 0px`, threshold: 0 },
+    );
+    heads.forEach((h) => io.observe(h));
+    setActive(heads[0].id); // 預設展開第一個 h2
+
+    // 平滑捲動 + 點連結關抽屜 (scrollIntoView 會尊重 scroll-margin-top)
+    const closeDrawer = () => toggleDrawer(false);
+    document
+      .querySelectorAll<HTMLAnchorElement>('a[data-toc-link]')
+      .forEach((a) => {
+        a.addEventListener('click', (ev) => {
+          const slug = a.dataset.tocLink!;
+          const target = document.getElementById(slug);
+          if (!target) return;
+          ev.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+          history.pushState(null, '', '#' + slug);
+          closeDrawer();
+        });
+      });
+
+    // ---- 抽屜開關 ----
+    const fab = document.querySelector<HTMLButtonElement>('.toc-fab');
+    const drawer = document.querySelector<HTMLElement>('.toc-drawer');
+    const overlay = document.querySelector<HTMLElement>('.toc-overlay');
+    function toggleDrawer(open: boolean) {
+      if (!drawer || !overlay || !fab) return;
+      if (open) {
+        drawer.hidden = false;
+        overlay.hidden = false;
+        // 下一幀套用 transition
+        requestAnimationFrame(() => {
+          drawer.classList.add('open');
+          overlay.classList.add('open');
+        });
+      } else {
+        drawer.classList.remove('open');
+        overlay.classList.remove('open');
+        const done = () => {
+          drawer.hidden = true;
+          overlay.hidden = true;
+          drawer.removeEventListener('transitionend', done);
+        };
+        drawer.addEventListener('transitionend', done);
+      }
+      fab.setAttribute('aria-expanded', String(open));
+    }
+    fab?.addEventListener('click', () =>
+      toggleDrawer(fab.getAttribute('aria-expanded') !== 'true'),
+    );
+    overlay?.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDrawer();
+    });
+  }
+
+  setupToc();
+</script>

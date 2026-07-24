@@ -5,6 +5,7 @@ import { parseId, getAvailableLocales } from '~/lib/posts';
 import { localeUrl } from '~/i18n/utils';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import FormattedDate from '~/components/FormattedDate.astro';
+import TableOfContents from '~/components/TableOfContents.astro';
 import { mdxComponents } from '~/components/mdx';
 
 export async function getStaticPaths() {
@@ -25,7 +26,7 @@ export async function getStaticPaths() {
 const { entry, available } = Astro.props;
 const locale = Astro.params.lang as Locale;
 const t = LOCALE_META[locale].ui;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 ---
 <BaseLayout
   locale={locale}
@@ -34,6 +35,8 @@ const { Content } = await render(entry);
   available={available}
   ogType="article"
 >
+  <TableOfContents headings={headings} label={t.toc} />
+
   <article class="container">
     <header class="post-head">
       <h1>{entry.data.title}</h1>
@@ -68,4 +71,6 @@ const { Content } = await render(entry);
   .tag { color: var(--fg-muted); text-decoration: none; }
   .tag:hover { color: var(--accent); }
   .back { margin-top: 3rem; font-size: 0.9rem; }
+  /* 目錄錨點捲動時抵銷 sticky 頂欄高度 */
+  .prose :global(:is(h2, h3, h4)[id]) { scroll-margin-top: 5rem; }
 </style>
