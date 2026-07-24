@@ -109,7 +109,8 @@ main { flex: 1 0 auto; width: 100%; }
 
 /* ---- Article prose -------------------------------------------------- */
 .prose { }
-.prose > * + * { margin-top: 1.35rem; }
+/* 段落間距要明顯大於行高(1.75),段落邊界才清楚,長文才不會糊成一片 */
+.prose > * + * { margin-top: 1.85rem; }
 .prose h2 { margin-top: 2.5rem; font-size: 1.5rem; }
 .prose h3 { margin-top: 2rem; font-size: 1.2rem; }
 .prose h4 { margin-top: 1.6rem; font-size: 1.05rem; color: var(--fg-muted); }
